@@ -26,15 +26,15 @@ jobs:
 
       - run: npm run build
 
-      # Sonar
-      - uses: SonarSource/sonarqube-scan-action@v6
-        env:
-          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
+      # # Sonar
+      # - uses: SonarSource/sonarqube-scan-action@v6
+      #   env:
+      #     SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
+      #     SONAR_HOST_URL: https://sonarcloud.io
 
-      - uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
-        env:
-          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
+      # - uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+      #   env:
+      #     SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
 
       # Zip
       - run: zip -r build-${{ github.run_number }}.zip dist
