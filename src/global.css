@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+.custom-legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin: 0 10px;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.legend-text {
+    font-size: 14px;
+    color: #000;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* This ensures the container is square */
+    background: rgba(255, 201, 157, 0.2);
+    border-radius: 50%;
+}
+
+.chart-container > canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+}
