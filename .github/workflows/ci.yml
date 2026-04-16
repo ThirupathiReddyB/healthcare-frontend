@@ -11,7 +11,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: dev
+
+    environment: master
+
+
+
 
     steps:
       - uses: actions/checkout@v4
