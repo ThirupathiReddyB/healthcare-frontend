@@ -1,0 +1,82 @@
+name: Deploy Pipeline
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        description: "build-XX.zip"
+        required: true
+
+jobs:
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.REGION }}
+
+      - run: |
+          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ github.event.inputs.build_id }} .
+
+      - run: unzip *.zip
+
+      - run: aws s3 sync dist s3://${{ vars.DEV_BUCKET }} --delete
+
+      - run: |
+          aws cloudfront create-invalidation \
+          --distribution-id ${{ vars.DEV_DIST_ID }} \
+          --paths "/*"
+
+  deploy-uat:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: uat
+
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.REGION }}
+
+      - run: |
+          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ github.event.inputs.build_id }} .
+
+      - run: unzip *.zip
+
+      - run: aws s3 sync dist s3://${{ vars.UAT_BUCKET }} --delete
+
+      - run: |
+          aws cloudfront create-invalidation \
+          --distribution-id ${{ vars.UAT_DIST_ID }} \
+          --paths "/*"
+
+  deploy-prod:
+    needs: deploy-uat
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.REGION }}
+
+      - run: |
+          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ github.event.inputs.build_id }} .
+
+      - run: unzip *.zip
+
+      - run: aws s3 sync dist s3://${{ vars.PROD_BUCKET }} --delete
+
+      - run: |
+          aws cloudfront create-invalidation \
+          --distribution-id ${{ vars.PROD_DIST_ID }} \
+          --paths "/*"

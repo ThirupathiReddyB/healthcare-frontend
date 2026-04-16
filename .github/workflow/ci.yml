@@ -1,0 +1,53 @@
+name: CI Build
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches: [development]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
+      - name: Create env
+        run: echo "VITE_BASE_URL=${{ vars.DEV_VITE_BASE_URL }}" > .env
+
+      - run: npm run build
+
+      # Sonar
+      - uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+        env:
+          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
+
+      # Zip
+      - run: zip -r build-${{ github.run_number }}.zip dist
+
+      # AWS OIDC
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.REGION }}
+
+      # Upload to S3
+      - run: |
+          aws s3 cp build-${{ github.run_number }}.zip \
+          s3://${{ vars.ARTIFACT_BUCKET }}/builds/
+
+      - run: echo "Artifact = build-${{ github.run_number }}.zip"
