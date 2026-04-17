@@ -5,11 +5,10 @@ permissions:
   contents: read
 
 on:
-  workflow_dispatch:
-    inputs:
-      build_id:
-        description: "build-XX.zip"
-        required: true
+  workflow_run:
+    workflows: ["CI Build"]
+    types:
+      - completed
 
 jobs:
 
@@ -18,19 +17,27 @@ jobs:
     environment: dev
 
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Set build id
+        run: echo "BUILD_ID=build-${{ github.event.workflow_run.run_number }}.zip" >> $GITHUB_ENV
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
-      - run: |
-          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ github.event.inputs.build_id }} .
+      - name: Download artifact
+        run: |
+          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ env.BUILD_ID }} .
 
-      - run: unzip *.zip
+      - name: Unzip
+        run: unzip *.zip
 
-      - run: aws s3 sync dist s3://${{ vars.DEV_BUCKET }} --delete
+      - name: Deploy to Dev
+        run: aws s3 sync dist s3://${{ vars.DEV_BUCKET }} --delete
 
-      - run: |
+      - name: Invalidate Dev CDN
+        run: |
           aws cloudfront create-invalidation \
           --distribution-id ${{ vars.DEV_DIST_ID }} \
           --paths "/*"
@@ -38,22 +45,30 @@ jobs:
   deploy-uat:
     needs: deploy-dev
     runs-on: ubuntu-latest
-    environment: uat
+    environment: uat   # 👈 approval here
 
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Set build id
+        run: echo "BUILD_ID=build-${{ github.event.workflow_run.run_number }}.zip" >> $GITHUB_ENV
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
-      - run: |
-          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ github.event.inputs.build_id }} .
+      - name: Download artifact
+        run: |
+          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ env.BUILD_ID }} .
 
-      - run: unzip *.zip
+      - name: Unzip
+        run: unzip *.zip
 
-      - run: aws s3 sync dist s3://${{ vars.UAT_BUCKET }} --delete
+      - name: Deploy to UAT
+        run: aws s3 sync dist s3://${{ vars.UAT_BUCKET }} --delete
 
-      - run: |
+      - name: Invalidate UAT CDN
+        run: |
           aws cloudfront create-invalidation \
           --distribution-id ${{ vars.UAT_DIST_ID }} \
           --paths "/*"
@@ -61,22 +76,30 @@ jobs:
   deploy-prod:
     needs: deploy-uat
     runs-on: ubuntu-latest
-    environment: prod
+    environment: prod   # 👈 approval here
 
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Set build id
+        run: echo "BUILD_ID=build-${{ github.event.workflow_run.run_number }}.zip" >> $GITHUB_ENV
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
-      - run: |
-          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ github.event.inputs.build_id }} .
+      - name: Download artifact
+        run: |
+          aws s3 cp s3://${{ vars.ARTIFACT_BUCKET }}/builds/${{ env.BUILD_ID }} .
 
-      - run: unzip *.zip
+      - name: Unzip
+        run: unzip *.zip
 
-      - run: aws s3 sync dist s3://${{ vars.PROD_BUCKET }} --delete
+      - name: Deploy to Prod
+        run: aws s3 sync dist s3://${{ vars.PROD_BUCKET }} --delete
 
-      - run: |
+      - name: Invalidate Prod CDN
+        run: |
           aws cloudfront create-invalidation \
           --distribution-id ${{ vars.PROD_DIST_ID }} \
           --paths "/*"
