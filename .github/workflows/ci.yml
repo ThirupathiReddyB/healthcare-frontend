@@ -35,7 +35,7 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.organization= thito-testing
+            -Dsonar.organization=thito-testing
             -Dsonar.projectKey=thito-testing
             -Dsonar.branch.name=development
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
