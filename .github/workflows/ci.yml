@@ -12,26 +12,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    environment: master
+    environment: dev
 
 
 
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - run: npm install
+      - name: Install
+        run: npm install
 
       - name: Create env
         run: echo "VITE_BASE_URL=${{ vars.DEV_VITE_BASE_URL }}" > .env
 
-      - run: npm run build
+      - name: Build
+        run: npm run build
 
-      # # Sonar
+      # (Optional) Sonar
       # - uses: SonarSource/sonarqube-scan-action@v6
       #   env:
       #     SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
@@ -41,18 +45,19 @@ jobs:
       #   env:
       #     SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
 
-      # Zip
-      - run: zip -r build-${{ github.run_number }}.zip dist
+      - name: Zip build
+        run: zip -r build-${{ github.run_number }}.zip dist
 
-      # AWS OIDC
-      - uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
-      # Upload to S3
-      - run: |
+      - name: Upload to S3
+        run: |
           aws s3 cp build-${{ github.run_number }}.zip \
           s3://${{ vars.ARTIFACT_BUCKET }}/builds/
 
-      - run: echo "Artifact = build-${{ github.run_number }}.zip"
+      - name: Output artifact
+        run: echo "Artifact = build-${{ github.run_number }}.zip"
