@@ -17,7 +17,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # ✅ required for sonar
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -27,26 +27,27 @@ jobs:
       - name: Install
         run: npm install
 
-      # 🔍 SONAR STAGE (ADDED ONLY THIS)
+      # 🔍 SONAR SCAN (FIXED)
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}   # ✅ changed
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.organization=thito-testing
-            -Dsonar.projectKey=thito-testing
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECTKEY }}
             -Dsonar.branch.name=development
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
+      # 🚨 QUALITY GATE
       - name: Sonar Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
         timeout-minutes: 5
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}   # ✅ changed
 
-      # 👇 your original steps (unchanged)
+      # 👇 YOUR ORIGINAL FLOW
       - name: Create env
         run: echo "VITE_BASE_URL=${{ vars.DEV_VITE_BASE_URL }}" > .env
 
