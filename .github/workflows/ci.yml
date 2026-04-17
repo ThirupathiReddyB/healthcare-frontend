@@ -24,14 +24,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install
+      - name: Install Dependencies
         run: npm install
 
-      # 🔍 SONAR SCAN (FIXED)
+      # 🔍 SONAR SCAN
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}   # ✅ changed
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # ✅ FIXED (use secrets)
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
@@ -40,35 +40,38 @@ jobs:
             -Dsonar.branch.name=development
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
-      # 🚨 QUALITY GATE
+      # 🚨 QUALITY GATE (FAILS IF BAD CODE)
       - name: Sonar Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
         timeout-minutes: 5
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # ✅ SAME TOKEN
 
-      # 👇 YOUR ORIGINAL FLOW
-      - name: Create env
+      # 🌐 ENV SETUP
+      - name: Create env file
         run: echo "VITE_BASE_URL=${{ vars.DEV_VITE_BASE_URL }}" > .env
 
-      - name: Build
+      # 🏗 BUILD
+      - name: Build App
         run: npm run build
 
+      # 📦 ZIP ARTIFACT
       - name: Zip build
         run: zip -r build-${{ github.run_number }}.zip dist
 
-      - name: Configure AWS (OIDC)
+      # 🔐 AWS LOGIN (OIDC)
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
+      # ☁️ UPLOAD TO S3 (ARTIFACT STORAGE)
       - name: Upload to S3
         run: |
           aws s3 cp build-${{ github.run_number }}.zip \
           s3://${{ vars.ARTIFACT_BUCKET }}/builds/
 
-      - name: Output artifact
+      # 🧾 OUTPUT
+      - name: Print artifact name
         run: echo "Artifact = build-${{ github.run_number }}.zip"
-
-####################
