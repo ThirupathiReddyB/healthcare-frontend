@@ -45,7 +45,7 @@ jobs:
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
         timeout-minutes: 5
         env:
-          SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}   # ✅ changed
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # 👇 YOUR ORIGINAL FLOW
       - name: Create env
