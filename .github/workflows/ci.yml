@@ -34,7 +34,7 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: af317c80b9ea7f2aa41f7a86f31c9bf5ed57eb70
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
@@ -53,7 +53,7 @@ jobs:
         uses: SonarSource/sonarqube-quality-gate-action@v1
         timeout-minutes: 10
         env:
-          SONAR_TOKEN: af317c80b9ea7f2aa41f7a86f31c9bf5ed57eb70
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # 🌐 ENV SETUP
       - name: Create env file
