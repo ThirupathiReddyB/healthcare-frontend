@@ -14,38 +14,46 @@ jobs:
     environment: CI_Environments
 
     steps:
+      # 📥 CHECKOUT
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 🟢 NODE SETUP
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      # 📦 INSTALL
       - name: Install Dependencies
         run: npm install
 
-      # 🔍 SONAR SCAN
+      # 🔍 SONAR SCAN (HARDCODED - NO OVERRIDE ISSUES)
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # ✅ FIXED (use secrets)
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECTKEY }}
+            -Dsonar.organization=thirupathi-reddy
+            -Dsonar.projectKey=thirupathi-reddy_thito-testing
             -Dsonar.branch.name=development
+            -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
-      # 🚨 QUALITY GATE (FAILS IF BAD CODE)
+      # ⏳ WAIT (FIXES 403 TIMING ISSUE)
+      - name: Wait for Sonar processing
+        run: sleep 30
+
+      # 🚨 QUALITY GATE
       - name: Sonar Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   # ✅ SAME TOKEN
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # 🌐 ENV SETUP
       - name: Create env file
@@ -66,7 +74,7 @@ jobs:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
-      # ☁️ UPLOAD TO S3 (ARTIFACT STORAGE)
+      # ☁️ UPLOAD TO S3
       - name: Upload to S3
         run: |
           aws s3 cp build-${{ github.run_number }}.zip \
