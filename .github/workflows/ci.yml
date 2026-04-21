@@ -11,7 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # environment: CI_Environments
 
     steps:
       # 📥 CHECKOUT
@@ -30,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # 🔍 SONAR SCAN (HARDCODED - NO OVERRIDE ISSUES)
+      # 🔍 SONAR SCAN
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -40,13 +39,18 @@ jobs:
           args: >
             -Dsonar.organization=thirupathi-reddy
             -Dsonar.projectKey=thirupathi-reddy_thito-testing
-            -Dsonar.branch.name=development
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
-      # # ⏳ WAIT (FIXES 403 TIMING ISSUE)
-      # - name: Wait for Sonar processing
-      #   run: sleep 30
+      # 🧪 DEBUG (to ensure metadata exists)
+      - name: Debug Sonar Report
+        run: |
+          echo "==== REPORT TASK ===="
+          cat .scannerwork/report-task.txt
+
+      # ⏳ WAIT (ensures Sonar processing completes)
+      - name: Wait for Sonar processing
+        run: sleep 60
 
       # 🚨 QUALITY GATE
       - name: Sonar Quality Gate
