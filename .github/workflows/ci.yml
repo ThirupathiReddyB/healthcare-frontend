@@ -29,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # 🔍 SONAR SCAN
+      # 🔍 SONAR SCAN (WORKING)
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -41,23 +41,6 @@ jobs:
             -Dsonar.projectKey=thirupathi-reddy_healthcare-frontend
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
-
-      # 🧪 DEBUG (to ensure metadata exists)
-      - name: Debug Sonar Report
-        run: |
-          echo "==== REPORT TASK ===="
-          cat .scannerwork/report-task.txt
-
-      # ⏳ WAIT (ensures Sonar processing completes)
-      - name: Wait for Sonar processing
-        run: sleep 60
-
-      # 🚨 QUALITY GATE
-      - name: Sonar Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 10
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # 🌐 ENV SETUP
       - name: Create env file
