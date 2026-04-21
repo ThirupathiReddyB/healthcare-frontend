@@ -34,7 +34,7 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: 488a0d25d471ae5f71b589013bd9c6c83d9e55d7
+          SONAR_TOKEN: af317c80b9ea7f2aa41f7a86f31c9bf5ed57eb70
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
@@ -44,16 +44,16 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
-      # ⏳ WAIT (FIXES 403 TIMING ISSUE)
-      - name: Wait for Sonar processing
-        run: sleep 30
+      # # ⏳ WAIT (FIXES 403 TIMING ISSUE)
+      # - name: Wait for Sonar processing
+      #   run: sleep 30
 
       # 🚨 QUALITY GATE
       - name: Sonar Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+        uses: SonarSource/sonarqube-quality-gate-action@v1
         timeout-minutes: 10
         env:
-          SONAR_TOKEN: 488a0d25d471ae5f71b589013bd9c6c83d9e55d7
+          SONAR_TOKEN: af317c80b9ea7f2aa41f7a86f31c9bf5ed57eb70
 
       # 🌐 ENV SETUP
       - name: Create env file
