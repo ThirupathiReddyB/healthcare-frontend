@@ -38,7 +38,7 @@ jobs:
         with:
           args: >
             -Dsonar.organization=thirupathi-reddy
-            -Dsonar.projectKey=thirupathi-reddy_thito-testing
+            -Dsonar.projectKey=thirupathi-reddy_healthcare-frontend
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
