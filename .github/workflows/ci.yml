@@ -13,53 +13,62 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
 
-
     steps:
+      # 📥 CHECKOUT
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # 🟢 NODE SETUP
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
+      # 📦 INSTALL
       - name: Install
         run: npm install
 
-      # 🔍 SONAR SCAN (WORKING)
+      # 🔍 SONAR SCAN (HARDCODED TOKEN)
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: 1281679b7f07300349ab4be385d2120ea2ae5af6   # ⚠️ hardcoded
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
             -Dsonar.organization=thirupathi-reddy
-            -Dsonar.projectKey=thirupathi-reddy_healthcare-frontend
+            -Dsonar.projectKey=thirupathi-reddy_thiru-testing
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
+      # 🌐 ENV SETUP
       - name: Create env
         run: echo "VITE_BASE_URL=${{ vars.DEV_VITE_BASE_URL }}" > .env
 
+      # 🏗 BUILD
       - name: Build
         run: npm run build
 
- 
-
+      # 📦 ZIP ARTIFACT
       - name: Zip build
         run: zip -r build-${{ github.run_number }}.zip dist
 
+      # 🔐 AWS LOGIN (OIDC)
       - name: Configure AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
+      # ☁️ UPLOAD TO S3
       - name: Upload to S3
         run: |
           aws s3 cp build-${{ github.run_number }}.zip \
           s3://${{ vars.ARTIFACT_BUCKET }}/builds/
 
+      # 🧾 OUTPUT
       - name: Output artifact
         run: echo "Artifact = build-${{ github.run_number }}.zip"
