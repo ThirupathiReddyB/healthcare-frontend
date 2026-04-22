@@ -35,12 +35,12 @@ jobs:
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: 1281679b7f07300349ab4be385d2120ea2ae5af6   # ⚠️ hardcoded
+          SONAR_TOKEN: 078ddce2c500b632893b2cf141b7a3f53d354e8d   # ⚠️ hardcoded
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.organization=thirupathi-reddy
-            -Dsonar.projectKey=thirupathi-reddy_thiru-testing
+            -Dsonar.organization=steigen-testing
+            -Dsonar.projectKey=ThirupathiReddyB_healthcare-frontend
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
