@@ -28,24 +28,32 @@ jobs:
           cache: 'npm'
 
       # 📦 INSTALL
-      - name: Install
-        run: npm install
+      - name: Install Dependencies
+        run: npm ci
 
-      # 🔍 SONAR SCAN (HARDCODED TOKEN)
-      - name: SonarQube Scan
+      # 🔍 SONARCLOUD SCAN
+      - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: 078ddce2c500b632893b2cf141b7a3f53d354e8d   # ⚠️ hardcoded
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
             -Dsonar.organization=steigen-testing
             -Dsonar.projectKey=ThirupathiReddyB_healthcare-frontend
+            -Dsonar.projectName=healthcare-frontend
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
+      # 🛑 QUALITY GATE (FAIL PIPELINE IF BAD CODE)
+      - name: SonarCloud Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       # 🌐 ENV SETUP
-      - name: Create env
+      - name: Create env file
         run: echo "VITE_BASE_URL=${{ vars.DEV_VITE_BASE_URL }}" > .env
 
       # 🏗 BUILD
@@ -57,7 +65,7 @@ jobs:
         run: zip -r build-${{ github.run_number }}.zip dist
 
       # 🔐 AWS LOGIN (OIDC)
-      - name: Configure AWS (OIDC)
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
