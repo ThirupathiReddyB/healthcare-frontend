@@ -31,19 +31,18 @@ jobs:
       - name: Install Dependencies
         run: npm i
 
-      # 🔍 SONARCLOUD SCAN (UPDATED)
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.organization=thirupathireddyb
-            -Dsonar.projectKey=thirupathireddyb_thiru-testing
-            -Dsonar.sources=.
-            -Dsonar.exclusions=node_modules/**,prisma/migrations/**,prisma/seed.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.qualitygate.wait=true
+     - name: SonarCloud Scan
+  uses: SonarSource/sonarcloud-github-action@v2
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  with:
+    args: >
+      -Dsonar.organization=thirupathireddyb
+      -Dsonar.projectKey=ThirupathiReddyB_healthcare-frontend
+      -Dsonar.sources=.
+      -Dsonar.exclusions=node_modules/**,prisma/migrations/**,prisma/seed.ts
+      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+      -Dsonar.qualitygate.wait=true
 
       # 🌐 ENV SETUP
       - name: Create env file
