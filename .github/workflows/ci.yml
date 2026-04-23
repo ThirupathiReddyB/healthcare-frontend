@@ -6,58 +6,70 @@ permissions:
 
 on:
   push:
-    branches: [development]
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     environment: dev
 
-
-
-
     steps:
+      # 📥 CHECKOUT
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # 🟢 NODE SETUP
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
-      - name: Install
-        run: npm install
+      # 📦 INSTALL
+      - name: Install Dependencies
+        run: npm ci   # better for CI than npm i
 
-      - name: Create env
+      # 🔍 SONARCLOUD SCAN (FIXED)
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=thirupathireddyb
+            -Dsonar.projectKey=ThirupathiReddyB_healthcare-frontend
+            -Dsonar.sources=.
+            -Dsonar.exclusions=node_modules/**,prisma/migrations/**,prisma/seed.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.qualitygate.wait=false
+
+      # 🌐 ENV SETUP
+      - name: Create env file
         run: echo "VITE_BASE_URL=${{ vars.DEV_VITE_BASE_URL }}" > .env
 
+      # 🏗 BUILD
       - name: Build
         run: npm run build
 
-      # (Optional) Sonar
-      # - uses: SonarSource/sonarqube-scan-action@v6
-      #   env:
-      #     SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
-      #     SONAR_HOST_URL: https://sonarcloud.io
-
-      # - uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
-      #   env:
-      #     SONAR_TOKEN: ${{ vars.SONAR_TOKEN }}
-
+      # 📦 ZIP ARTIFACT
       - name: Zip build
         run: zip -r build-${{ github.run_number }}.zip dist
 
-      - name: Configure AWS (OIDC)
+    # connecti OIDC
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.REGION }}
 
+      # ☁️ UPLOAD TO S3
       - name: Upload to S3
         run: |
           aws s3 cp build-${{ github.run_number }}.zip \
           s3://${{ vars.ARTIFACT_BUCKET }}/builds/
 
+      # 🧾 OUTPUT
       - name: Output artifact
         run: echo "Artifact = build-${{ github.run_number }}.zip"
