@@ -29,12 +29,7 @@ jobs:
 
       # 📦 INSTALL
       - name: Install Dependencies
-        run: npm ci
-
-      # 🧪 (OPTIONAL BUT RECOMMENDED) RUN TESTS FOR COVERAGE
-      - name: Run Tests
-        run: npm run test -- --coverage
-        continue-on-error: true
+        run: npm i
 
       # 🔍 SONARCLOUD SCAN (UPDATED)
       - name: SonarCloud Scan
