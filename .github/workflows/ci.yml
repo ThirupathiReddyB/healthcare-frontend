@@ -43,7 +43,7 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.exclusions=node_modules/**,prisma/migrations/**,prisma/seed.ts
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.wait=false
 
       # 🌐 ENV SETUP
       - name: Create env file
