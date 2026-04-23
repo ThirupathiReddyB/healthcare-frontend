@@ -31,17 +31,20 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # 🔍 SONARCLOUD SCAN (includes quality gate)
+      # 🔍 SONARCLOUD SCAN
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.organization=steigen-testing
-            -Dsonar.projectKey=ThirupathiReddyB_healthcare-frontend
-            -Dsonar.projectName=healthcare-frontend
+            -Dsonar.organization=thirupathireddyb
+            -Dsonar.projectKey=thirupathireddyb_thiru-testing
+            -Dsonar.projectName=thiru-testing
             -Dsonar.sources=.
+            -Dsonar.projectBaseDir=.
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.verbose=true
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
       # 🌐 ENV SETUP
