@@ -33,10 +33,9 @@ jobs:
 
       # 🔍 SONARCLOUD SCAN
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
             -Dsonar.organization=steigen-testing
@@ -45,9 +44,9 @@ jobs:
             -Dsonar.sources=.
             -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
-      # 🛑 QUALITY GATE (FAIL PIPELINE IF BAD CODE)
+      # 🛑 QUALITY GATE
       - name: SonarCloud Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1
+        uses: SonarSource/sonarcloud-quality-gate-action@v1
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
