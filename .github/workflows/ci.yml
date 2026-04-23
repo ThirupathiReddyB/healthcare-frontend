@@ -31,7 +31,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      # 🔍 SONARCLOUD SCAN
+      # 🧪 (OPTIONAL BUT RECOMMENDED) RUN TESTS FOR COVERAGE
+      - name: Run Tests
+        run: npm run test -- --coverage
+        continue-on-error: true
+
+      # 🔍 SONARCLOUD SCAN (UPDATED)
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
@@ -40,12 +45,10 @@ jobs:
           args: >
             -Dsonar.organization=thirupathireddyb
             -Dsonar.projectKey=thirupathireddyb_thiru-testing
-            -Dsonar.projectName=thiru-testing
             -Dsonar.sources=.
-            -Dsonar.projectBaseDir=.
+            -Dsonar.exclusions=node_modules/**,prisma/migrations/**,prisma/seed.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.qualitygate.wait=true
-            -Dsonar.verbose=true
-            -Dsonar.exclusions=prisma/migrations/**,prisma/seed.ts
 
       # 🌐 ENV SETUP
       - name: Create env file
